@@ -357,6 +357,8 @@ If any check fails, it prints exactly what's wrong and what to do.
 Three challenges composing one pipeline, all running Gemma 4 (free via Google AI Studio or locally via Ollama): (1) extract aesthetic patterns from vibe coding sessions into structured taste directives — register, palette, motion, voice — not configuration, (2) build the self-amending loop nobody has built — model watches your aesthetic choices, reflects using thinking mode, writes taste directives into your rules file, (3) evaluate whether taste directives actually change output using LLM-as-judge with visible reasoning. Cloud fast lane means no hardware requirements; local path needs 16GB+ RAM. Bring your existing rules files — an audit script shows exactly how much taste is missing.
 
 ## Existing Repos in github.com/vibecodingnights
+- **reverse-engineering** — Your LLM can decompile a function. It cannot understand a binary.
+- **metaprompting** — Configuration is solved. Taste isn't. Build the metaprompting loop nobody has built — Gemma 4 watches your aesthetic choices and writes the taste directives that shape the next session.
 - **auto-vcn** — 
 - **bob** — Finds hackathons. Enters them. Wins.
 - **agent-teams** — Think in teams, not prompts.

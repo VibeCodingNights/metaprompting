@@ -1,0 +1,184 @@
+/* Turn 2 register: stone palette, serif body, lowercase labels, breathing room.
+   Slide 3a opts into the shout register via `.shout-scope` to demonstrate the
+   register flip before the argument is made in words. Do not sand it down. */
+
+:root {
+  --slidev-theme-primary: #a8a29e;       /* stone-400 — quiet primary */
+  --slidev-color-background: #1c1917;    /* stone-900 */
+  --slidev-color-text: #e7e5e4;          /* stone-200 */
+  --slidev-code-background: #292524;     /* stone-800 */
+}
+
+html, body, #app,
+.slidev-slide-content,
+.slidev-page,
+.slidev-page > .slidev-layout { background: #1c1917 !important; color: #e7e5e4; }
+
+.slidev-layout,
+.slidev-layout h1,
+.slidev-layout h2,
+.slidev-layout h3,
+.slidev-layout p,
+.slidev-layout li,
+.slidev-layout blockquote {
+  font-family: "Iowan Old Style", "Palatino Linotype", "Palatino",
+               "Source Serif Pro", "Georgia", serif;
+  font-weight: 400;
+}
+
+.slidev-layout h1,
+.slidev-layout h2 {
+  text-transform: lowercase;
+  letter-spacing: -0.01em;
+  font-weight: 400;
+  color: #f5f5f4;
+}
+
+.slidev-layout h1 { font-size: 2.2rem; margin-bottom: 1.2rem; }
+.slidev-layout h2 { font-size: 1.5rem; color: #a8a29e; }
+
+.label {
+  text-transform: uppercase;
+  letter-spacing: 0.15em;
+  font-size: 0.7rem;
+  color: #a8a29e;            /* stone-400 — WCAG AA compliant on stone-900 */
+  font-family: "Iowan Old Style", serif;
+  margin-bottom: 2rem;
+}
+
+.ladder { list-style: none !important; }
+.ladder li { list-style: none !important; }
+.ladder li::marker { content: ""; display: none; }
+
+/* Slide 7 (craft) overflow fix — scoped font reduction on the craft slide only. */
+.craft-slide pre { font-size: 0.68rem !important; line-height: 1.5 !important; padding: 0.8rem 1rem !important; }
+
+.slidev-layout code,
+.slidev-layout pre,
+.slidev-layout pre code {
+  font-family: "JetBrains Mono", "SF Mono", "Menlo", monospace !important;
+}
+
+.slidev-layout pre {
+  background: #292524 !important;
+  border: 1px solid #44403c;
+  border-radius: 2px;
+  padding: 1rem 1.2rem;
+  font-size: 0.75rem;
+  line-height: 1.55;
+}
+
+.cite { color: #78716c; font-style: italic; font-size: 0.85em; }
+
+.epigraph {
+  color: #a8a29e;
+  font-style: italic;
+  font-size: 0.95rem;
+  border-top: 1px solid #44403c;
+  padding-top: 0.8rem;
+  margin-top: 1.5rem;
+  line-height: 1.7;
+}
+
+.diptych {
+  display: grid;
+  grid-template-columns: 1fr 1fr;
+  gap: 2rem;
+  align-items: start;
+}
+
+.diptych .col h3 {
+  text-transform: lowercase;
+  font-size: 0.8rem;
+  letter-spacing: 0.1em;
+  color: #78716c;
+  margin-bottom: 0.6rem;
+  font-weight: 400;
+}
+
+.ladder {
+  list-style: none;
+  padding: 0;
+  margin: 1.5rem 0;
+}
+.ladder li {
+  padding: 0.4rem 0;
+  border-bottom: 1px solid #292524;
+  font-family: "JetBrains Mono", monospace;
+  font-size: 0.85rem;
+  color: #d6d3d1;
+}
+.ladder li .desc {
+  color: #78716c;
+  margin-left: 1.2rem;
+  font-family: "Iowan Old Style", serif;
+  font-style: italic;
+}
+
+.shout-scope {
+  background: linear-gradient(135deg, #7c3aed 0%, #2563eb 100%) !important;
+  color: white !important;
+  font-family: "Inter", "SF Pro Display", system-ui, sans-serif !important;
+  padding: 3rem !important;
+  text-align: center;
+}
+.shout-scope h1 {
+  font-family: "Inter", system-ui, sans-serif !important;
+  font-weight: 900 !important;
+  font-size: 3.5rem !important;
+  text-transform: uppercase !important;
+  letter-spacing: 0.02em !important;
+  color: white !important;
+  margin-bottom: 1.5rem !important;
+}
+.shout-scope .cta {
+  display: inline-block;
+  background: #facc15;
+  color: #1c1917;
+  padding: 1rem 2.5rem;
+  border-radius: 9999px;
+  font-weight: 800;
+  font-size: 1.1rem;
+  text-transform: uppercase;
+  letter-spacing: 0.05em;
+  margin-top: 1rem;
+  font-family: "Inter", sans-serif !important;
+}
+.shout-scope p {
+  font-family: "Inter", sans-serif !important;
+  font-size: 1.3rem;
+  font-weight: 600;
+  max-width: 28rem;
+  margin: 0.5rem auto 1.5rem;
+  color: white !important;
+}
+
+.quote-slide { padding-top: 3rem; }
+.quote-slide blockquote {
+  border: none;
+  padding: 0;
+  margin: 0;
+  font-size: 1.6rem;
+  line-height: 2.6;
+}
+.quote-slide blockquote p {
+  margin: 1.2rem 0;
+  color: #e7e5e4;
+}
+
+.hierarchy {
+  font-family: "JetBrains Mono", monospace;
+  font-size: 0.8rem;
+  line-height: 2;
+  color: #d6d3d1;
+}
+.hierarchy .path { color: #a8a29e; }
+.hierarchy .note {
+  color: #78716c;
+  font-family: "Iowan Old Style", serif;
+  font-style: italic;
+  margin-left: 2rem;
+  font-size: 0.85rem;
+}
+
+#slidev-goto-dialog { display: none !important; }

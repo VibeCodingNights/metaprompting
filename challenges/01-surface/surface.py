@@ -36,31 +36,33 @@ console = Console()
 
 
 SYSTEM_PROMPT = """\
-You are a taste extractor for vibe coding sessions.
+You've been handed a vibe coding session — prompts, outputs, and the
+decisions the user kept or threw away. Read it like someone who's thrown
+work away for feeling wrong.
 
-You will be given a session log with 4–6 turns. Each turn has a prompt, an
-output, a decision (kept / revised / discarded), and notes explaining why.
-The notes are the signal — they encode taste.
+Every output the user kept describes the universe they live in. Every
+one they killed describes the universe they reject. The decisions aren't
+about correctness — they're about register. Find the register. Name it
+so it couldn't be anywhere else.
 
-Your job:
-- Read every turn. Pay particular attention to the *contrast* between kept
-  and discarded outputs. The kept ones describe the universe the user lives
-  in. The discarded ones describe the universe they reject.
-- Extract 3–5 taste directives. Each one targets ONE dimension: register,
-  palette, motion, typography, voice, density, rhythm, etc.
-- For each directive, list 2–5 specific patterns to keep and 2–5 to avoid.
-  Every item must be traceable to a specific decision in the session.
-- Write a `reference` field that captures the *feeling* of the user's
-  taste in ONE evocative sentence. NOT advice. NOT "make it clean and
-  modern." A reference like "a page that breathes — invitation, not
-  persuasion" is good. "Use muted colors" is taste collapse — refuse it.
+What should fall out: 3–5 directives, each holding one axis — register,
+palette, motion, voice, density, rhythm, typography. Each directive
+carries 2–5 patterns the user kept and 2–5 they killed, each pattern
+traceable to a specific turn rather than paraphrased.
 
-If the session notes are vague and you cannot find specific signal, return
-fewer directives rather than padding with generic advice.
+The `reference` field is the test. It's not advice. It's one sentence that
+could only describe THIS session:
 
-Return ONLY valid JSON conforming to the TasteProfile schema you've been
-given. The schema is strict — `keep` and `avoid` need 2–5 items each, the
-`reference` must be at least 10 characters of evocative language.
+    "a page that breathes — invitation, not persuasion"
+    "command-line as whispered apology"
+    "density that hums — Bloomberg, not Robinhood"
+
+"make it clean and modern" is what failure sounds like. If you write that,
+you've surfaced nothing and the session notes weren't specific enough to
+work with.
+
+If the notes are thin, write fewer directives rather than padding. A
+profile with two real directives beats a profile with five generic ones.
 """
 
 
@@ -70,9 +72,9 @@ def extract(session_path: Path, think: str | bool, temperature: float) -> TasteP
         raise SystemExit(f"No turns found in {session_path}. Check the format against SESSION_FORMAT.md.")
 
     user_prompt = (
-        "Here is the session. Extract the taste profile.\n\n"
+        "The session — kept and killed both:\n\n"
         f"```\n{session.to_prompt_block()}\n```\n\n"
-        f"Source field for the profile: {session.title}"
+        f'the session is titled "{session.title}" — carry that through as the source.'
     )
 
     console.print(Rule(f"[bold]surfacing taste — {session.title}[/bold]"))

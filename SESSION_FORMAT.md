@@ -139,3 +139,34 @@ The `notes` field is the signal. When you feed this session to Gemma 4, it reads
 If your notes say "made it cleaner," the model will write "make it clean" — taste collapsed to generic advice. If your notes say "no streaks, no stats — rejection of gamification," the model has something to work with.
 
 **Specific notes → specific directives. Vague notes → taste collapse.**
+
+## Also readable: Claude Code JSONL
+
+`shared/session_parser.py` ships with two parsers. The markdown format above is the primary one — it's the format the seeded sessions use, and the notes fields are the richest taste signal. The second parser reads Claude Code's live session JSONL at `~/.claude/projects/<encoded-cwd>/<uuid>.jsonl` so you can surface the taste in sessions you've *already* had.
+
+```python
+from pathlib import Path
+from shared.session_parser import discover_current_session, parse_jsonl_session
+
+jsonl = discover_current_session(Path.cwd())
+session = parse_jsonl_session(jsonl, window_turns=5)
+# Same Session interface — feed directly to surface.extract() or loop.observe()
+```
+
+### Trim spec
+
+The JSONL is big (current-session at this writing: 153 events, 634KB) and most of that weight is tool-result noise, not taste signal. The parser trims aggressively:
+
+- **drop entirely:** `permission-mode`, `last-prompt`, `file-history-snapshot`, `queue-operation`, `system`, `attachment` (metadata, not conversation)
+- **keep full:** user plain-text prompts; assistant text blocks; assistant `Write`/`Edit`/`NotebookEdit` tool calls (taste manifests in the code being generated)
+- **abbreviate to one line:** assistant `Bash`/`Read`/`Grep`/`Glob`/`WebFetch`/`WebSearch` tool calls (navigation noise)
+- **drop:** user tool-result blocks (almost entirely file contents and command output)
+- **window:** last K user→assistant turns (default K=5)
+
+On the current session that yields ~2,500 characters — well under Gemma 4's 256K ceiling.
+
+### What's lost
+
+The JSONL doesn't record explicit `kept`/`discarded` markers — Claude Code doesn't ask you whether you kept an output. The parser treats every assistant turn as `kept` by default. The *signal* of rejection is in the next user message ("no, try again," "too aggressive, soften it"), which v1 doesn't infer. A future version could.
+
+So: seeded markdown sessions give you a stronger signal per turn. JSONL gives you volume — hundreds of turns' worth of implicit taste, for free.

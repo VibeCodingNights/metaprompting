@@ -40,6 +40,10 @@ They compose into one pipeline.
 2. **[Loop](challenges/02-loop/)** — The self-amending taste loop. The model watches your aesthetic choices and writes directives into your rules file.
 3. **[Vibe Check](challenges/03-vibecheck/)** — Generate with the directive and without. Did the taste actually land?
 
+## The fourth path, for the ambitious
+
+**[The Sentinel](challenges/02-loop/sentinel_README.md)** — Gemma 4 tails your live Claude Code session (`~/.claude/projects/<encoded-cwd>/<uuid>.jsonl`), holds its own taste agenda, and `claude -p --resume`'s course corrections on its own authority. Silence is valid; intervention is earned. *No one has built this.*
+
 ## Brought your own rules files?
 
 Drop your `.cursorrules`, `CLAUDE.md`, or `AGENTS.md` in [`bring-your-own/`](bring-your-own/). Then run:
@@ -52,17 +56,33 @@ The audit reports what taste is *implied* by your phrasing but never stated. Use
 
 ## The two formats
 
-- **[SESSION_FORMAT.md](SESSION_FORMAT.md)** — How vibe coding sessions are logged. Prompt → output → decision → *why*.
+- **[SESSION_FORMAT.md](SESSION_FORMAT.md)** — How vibe coding sessions are logged. Prompt → output → decision → *why*. Also documents the live Claude Code JSONL parser — point Surface or Loop at your real history.
 - **[TASTE_FORMAT.md](TASTE_FORMAT.md)** — The taste directive schema. `dimension`, `keep`, `avoid`, `reference`.
+
+## How the prompts talk to Gemma 4
+
+The system prompts in `surface.py` and `loop.py` are themselves in-register — invitation, not instruction. That's the craft: **the prompt's own register is the induction signal.**
+
+> "You are a taste extractor" → corporate output → `reference` fields that read "make it clean and modern." 
+> "Read it like someone who's thrown work away for feeling wrong" → `reference` fields that read "a page that breathes — invitation, not persuasion."
+
+Three other craft moves baked into the prompts, per the induction research:
+- **Divergent exemplars beat curated ones.** 2–3 reference fields spanning web/CLI/data surfaces, not 5 examples on the same dimension.
+- **Name the failure mode explicitly.** `"make it clean and modern" is what failure sounds like` lets the model self-recognize collapse.
+- **Validate refusal.** `two real directives beats five generic ones` — padding for schema's sake is a failure, not a win.
+
+Read the prompts. They're short. Edit them as you need — if they don't fit your register, you own the words.
 
 ## Entry paths
 
 | You are… | Start here |
 |---|---|
 | New to rules files or local LLMs | Cloud setup → Challenge 1 |
-| Cursor/Claude Code user with some Python | Challenge 2: fill the loop stubs |
+| Claude Code user with some Python | Challenge 2: fill the loop stubs |
 | Builds with LLMs, knows eval | Challenge 3: build the judge |
 | Brought your messy rules files | `audit.py` on your files → any challenge |
+| Want to loop on your own history | `discover_current_session()` + `parse_jsonl_session()` → Challenge 1 or 2 against your real Claude Code JSONL |
+| Architecturally ambitious | [The Sentinel](challenges/02-loop/sentinel_README.md) — tail your live session, intervene on taste |
 
 ## Resources
 

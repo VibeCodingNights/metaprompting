@@ -21,9 +21,11 @@ The `shared/` modules handle thinking, tools, and rules I/O. You only own the lo
 
 ```
 02-loop/
-├── README.md          ← you are here
-├── loop.py            ← four stubs to fill in
-├── watch.py           ← live session logger (record decisions as you work)
+├── README.md              ← you are here
+├── loop.py                ← four stubs to fill in
+├── watch.py               ← live session logger (record decisions as you work)
+├── sentinel.py            ← stretch: the standing taste conscience (see sentinel_README.md)
+├── sentinel_README.md     ← ideological brief for the sentinel
 └── sample_session/
     ├── session.md             ← a complete session with strong taste signal
     ├── starting_rules.md      ← config-only — zero taste
@@ -81,7 +83,10 @@ Take any session from `challenges/01-surface/sessions/` and a fresh copy of `sta
 
 - **Deduplication.** The default `append_taste()` in `shared/rules_io.py` already dedupes by dimension — if `register` exists, the new one replaces it. Try the opposite: a `refine` mode that *merges* the existing keep/avoid lists with the new ones.
 - **Live logging.** `watch.py` is a stub for capturing your real decisions in real time. Wire it up, log a session during the event, then loop on your actual choices.
+- **Loop on your real history.** `shared/session_parser.py` has `discover_current_session(cwd)` + `parse_jsonl_session(path, window_turns=5)` — point the loop at `~/.claude/projects/<encoded-cwd>/<uuid>.jsonl` (the JSONL Claude Code writes as you work) and you'll surface the taste you've been implicitly building all along, not just taste from the seeded sessions.
+- **Scope-aware amend.** `shared.rules_io.amend_scoped(directives, cwd=..., scope="nested", nested_dir=Path("web"))` and `suggest_scope(...)` let the loop route landing-page taste to `./web/CLAUDE.md` and CLI voice to `./cli/CLAUDE.md` — honoring the fact that a meditation app and a trading floor don't share a register.
 - **Cross-session synthesis.** Run reflect on three sessions at once. Does Gemma 4 find directives that hold across all of them, or does it collapse to the lowest common denominator?
+- **The sentinel (stretch).** `sentinel.py` is the live version of this loop — instead of running after-the-fact, it tails your live Claude Code session and intervenes on its own authority. See `sentinel_README.md` for the ideological brief and the architecture.
 
 ## What "done" looks like
 

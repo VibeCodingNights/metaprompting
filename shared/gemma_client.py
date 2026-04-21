@@ -16,8 +16,58 @@ from __future__ import annotations
 
 import json
 import os
+import re
 from dataclasses import dataclass, field
 from typing import Any, Callable
+
+# --------------------------------------------------------------------------- #
+# Output sanitizers — keep register-corrupting artifacts out of `content`.
+#
+# Gemma 4's HF model card warns that thinking-channel tokens leaking into the
+# content field poison style on subsequent turns. Ollama occasionally leaks
+# them despite exposing a separate `thinking` field (see ollama/ollama #15595
+# for a related fence-leak issue). Cloud providers that forward raw model
+# output sometimes leak `<think>` too. We strip conservatively: tagged region
+# + tags, nothing else.
+# --------------------------------------------------------------------------- #
+
+_THINK_LEAK_PATTERNS = [
+    re.compile(r"<\|think\|>.*?<\|/think\|>", re.DOTALL),
+    re.compile(r"<\|channel\|>thought.*?<\|/channel\|>", re.DOTALL),
+    re.compile(r"<think>.*?</think>", re.DOTALL),
+    re.compile(r"<thinking>.*?</thinking>", re.DOTALL),
+]
+
+# Matches an opening ```json / ```JSON / ``` fence on its own line at the very
+# start of the string, and the trailing ``` on its own line at the very end.
+# We only strip when `format=` was requested — see ollama/ollama #15595.
+_FENCE_OPEN = re.compile(r"\A\s*```(?:json|JSON)?[ \t]*\r?\n?")
+_FENCE_CLOSE = re.compile(r"\r?\n?[ \t]*```\s*\Z")
+
+
+def _strip_think_leaks(content: str) -> str:
+    """Remove thinking-channel tokens that leaked into content."""
+    if not content:
+        return content
+    for pat in _THINK_LEAK_PATTERNS:
+        content = pat.sub("", content)
+    return content
+
+
+def _strip_json_fences(content: str) -> str:
+    """Unwrap ```json … ``` fences Gemma 4 wraps around schema-constrained JSON.
+
+    Only call when `format=` was requested. We require the fence to bracket
+    the whole string (open at start, close at end) so a JSON string value
+    that legitimately contains backticks is left alone.
+    """
+    if not content:
+        return content
+    m_open = _FENCE_OPEN.search(content)
+    m_close = _FENCE_CLOSE.search(content)
+    if m_open and m_close and m_close.start() > m_open.end():
+        return content[m_open.end() : m_close.start()]
+    return content
 
 # Default model name. Overridable via GEMMA_MODEL env var for people using
 # a different tag (e.g. 'gemma4:27b', 'gemma-4-27b-it' on cloud providers).
@@ -130,6 +180,11 @@ def _chat_local(messages, *, think, format, tools, temperature, model) -> ChatRe
         for tc in tool_calls_raw
     ]
 
+    # Sanitize content — never touch thinking/tool_calls.
+    content = _strip_think_leaks(content)
+    if format is not None:
+        content = _strip_json_fences(content)
+
     return ChatResponse(content=content, thinking=thinking, tool_calls=tool_calls, raw=response)
 
 
@@ -199,6 +254,12 @@ def _chat_cloud(messages, *, think, format, tools, temperature, model) -> ChatRe
     # Some cloud providers surface reasoning on the message object.
     thinking = getattr(choice.message, "reasoning", "") or ""
 
+    # Sanitize content — some providers forward raw `<think>` tags and/or
+    # wrap JSON in ```json fences even under response_format=json_schema.
+    content = _strip_think_leaks(content)
+    if format is not None:
+        content = _strip_json_fences(content)
+
     return ChatResponse(content=content, thinking=thinking, tool_calls=tool_calls, raw=response)
 
 
@@ -245,3 +306,62 @@ def backend_info() -> dict[str, str]:
         "base": "ollama (http://localhost:11434)",
         "model": DEFAULT_LOCAL_MODEL,
     }
+
+
+# --------------------------------------------------------------------------- #
+# Two-stage extraction — preserves register under schema constraint.
+# --------------------------------------------------------------------------- #
+
+
+def two_stage_extract(
+    messages: list[dict[str, str]],
+    schema_cls: type,  # a Pydantic BaseModel subclass
+    *,
+    think: bool | str = "high",
+    temperature_prose: float = 0.7,
+    temperature_extract: float = 0.2,
+    model: str | None = None,
+) -> Any:
+    """Two-stage extraction for register-preservation under schema constraint.
+
+    Pass 1: free-form prose in the target register, no format constraint.
+    Pass 2: re-encode pass 1's content into schema-conforming JSON.
+
+    Use when single-call `chat(..., format=...)` collapses the register
+    (e.g., the `reference` field reads as generic advice).
+    """
+    # Pass 1: let the model think and write prose. No schema — it would clip
+    # the voice before the reflection even lands.
+    pass1 = chat(
+        messages,
+        think=think,
+        format=None,
+        temperature=temperature_prose,
+        model=model,
+    )
+
+    # Guard: an empty pass 1 (model emitted only thinking, or upstream hiccup)
+    # makes the pass-2 call a 400 on most providers. Surface it clearly.
+    if not (pass1.content or "").strip():
+        raise RuntimeError("two_stage_extract: pass 1 returned empty content")
+
+    # Pass 2: structure without rewriting. Low temperature, no thinking —
+    # we want a faithful re-encoding, not a second pass of reasoning.
+    pass2 = chat(
+        [
+            {
+                "role": "system",
+                "content": (
+                    "Take the reflection above and return valid JSON conforming "
+                    "to the schema. Do not rewrite the voice — just structure it."
+                ),
+            },
+            {"role": "user", "content": pass1.content},
+        ],
+        think=False,
+        format=schema_cls.model_json_schema(),
+        temperature=temperature_extract,
+        model=model,
+    )
+
+    return pass2.parsed(schema_cls)

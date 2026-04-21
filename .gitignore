@@ -20,6 +20,16 @@ venv/
 challenges/03-vibecheck/outputs/
 challenges/02-loop/sample_session/*.amended.md
 
+# Slidev deck build artifacts
+deck/node_modules/
+deck/dist/
+deck/.slidev/
+
+# Review-run debris (playwright + rendered slide screenshots)
+.playwright-mcp/
+slide-*.png
+deck/*.png
+
 # Bring-your-own — keep the README and .gitkeep, ignore everything else
 bring-your-own/*
 !bring-your-own/README.md

@@ -50,22 +50,30 @@ def observe(session_path: Path) -> Session:
 # --------------------------------------------------------------------------- #
 
 REFLECT_SYSTEM = """\
-You are reflecting on a vibe coding session to find the *patterns* the user
-is enforcing across multiple turns.
+You've been handed a vibe coding session. Before generalizing anything —
+before writing a single directive — just reflect.
 
-Read all the turns. Pay particular attention to:
-- The contrast between turns marked `kept` and turns marked `discarded`. The
-  kept ones describe the universe the user lives in. The discarded ones
-  describe the universe they reject.
-- Patterns that hold across more than one turn. A taste rule that only
-  shows up once is a preference. A pattern that holds across turns is a
-  *register*.
-- Specificity in the notes. The user's `Notes:` field is the signal — the
-  more concrete the why, the more specific the pattern.
+Read all the turns. Watch the contrast between what the user kept and what
+they killed. The kept ones describe the universe they live in. The killed
+ones describe the universe they reject. Patterns that thread across
+multiple turns unchanged are the register of the session. Patterns that
+appear once are mere preferences.
 
-Do NOT extract directives yet. Reflect in prose. Find 3–5 distinct patterns.
-For each one, state what the pattern is and cite the specific turns that
-support it. Be willing to say "this pattern only shows up once, weak signal".
+Don't extract directives yet. Write prose — 3–5 distinct patterns, each
+cited to specific turns. If a pattern appears once, say so, call it weak
+signal. If it threads through three turns, name it as register.
+
+Your goal isn't to summarize. It's to *name*:
+
+    "this writer is building in the register of an essay,
+     not a pitch deck"
+    "this sysadmin at 3am respecting other sysadmins at 3am"
+    "this trader wants the density of Bloomberg, not the
+     rounded-card aesthetic of Robinhood"
+
+If what you write could describe any vibe coding session, you've collapsed.
+"make it clean and modern" is what that collapse sounds like in prose.
+Sharpen.
 """
 
 
@@ -91,24 +99,32 @@ def reflect(session: Session) -> str:
 # --------------------------------------------------------------------------- #
 
 GENERALIZE_SYSTEM = """\
-You generalize a reflection on a vibe coding session into structured taste
-directives.
+You've read a session and reflected on its patterns. Now materialize those
+patterns as structured directives — the kind that can live in someone's
+CLAUDE.md and actually shape what they build next.
 
-You will be given:
-1. The original session
-2. A reflection on patterns across turns
+The `write_taste_directive` tool lets you name one axis at a time —
+register, palette, motion, voice, density, rhythm, typography. Take as
+many passes as there are distinct axes in the session, and no more. One
+axis per call; don't smear dimensions across a directive or the shape
+blurs.
 
-Your job: call the `write_taste_directive` tool 3–5 times. Each call captures
-ONE dimension of taste (register, palette, motion, voice, density, ...).
+For each directive:
+  - `keep`: 2–5 patterns the user maintained, each traceable to a turn
+  - `avoid`: 2–5 patterns the user rejected, each traceable to a turn
+  - `reference`: one sentence that could only describe THIS session
 
-Rules for each directive:
-- `dimension` is one word or short phrase.
-- `keep` is 2–5 patterns that the user maintained, traceable to specific turns.
-- `avoid` is 2–5 patterns that the user rejected, traceable to specific turns.
-- `reference` is ONE evocative sentence. NOT advice. NOT "make it clean".
-  Something like "a page that breathes — invitation, not persuasion".
+The `reference` field is where taste lives or collapses:
 
-If the reflection is thin, write fewer directives. Do not pad.
+    "a page that breathes — invitation, not persuasion"
+    "command-line as whispered apology"
+    "density that hums — Bloomberg, not Robinhood"
+
+Not "make it clean and modern." Not "use muted colors." Not "minimal and
+professional." If you write those, you've materialized nothing.
+
+If the reflection was thin, write fewer directives. Two specific directives
+beat five generic ones.
 """
 
 
